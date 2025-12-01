@@ -1,0 +1,41 @@
+# 🔐 Üçüncü Taraf Paketlerin Güvenli Kurulumu
+
+Bu videoda, Laravel paketlerini güvenli bir şekilde yükleme ve değerlendirme konusuna biraz değineceğiz. Güvenli paketleri nasıl seçeceğimizden bahsedelim. Öncelikle, bunun tamamen açık kaynak olduğunu unutmayalım ve bunu yeterince vurgulayamayacağımı söylemeliyim: Bu paketlerin kaynak kodunun bir kısmına yüklemeden önce gerçekten bakmanız gerekiyor. Sadece güvenli olup olmadıklarını, iyi uygulamaları takip edip etmediklerini görmekle kalmaz, aynı zamanda verimli olup olmadıklarını, sizin normalde yapmayacağınız şeyler yapıp yapmadıklarını veya aslında ihtiyacınız olmayan daha fazla fonksiyonellik ve kod ekleyip eklemediklerini de görebilirsiniz. GitHub deposuna baktığınızda, yakın zamanda bir aktivite olup olmadığına bakın. Laravel sürekli gelişiyor ve bu paketlerin de güncel kalması gerekiyor. Eğer yakın zamanda hiç aktivite görmediyseniz bu mutlaka kötü anlamına gelmez, fakat bu paketin en güncel veya en güvenli seçenek olmadığına dair bir gösterge olabilir ve bunu diğerleriyle kıyaslamak isteyebilirsiniz.
+
+Security MD adı verilen bir markdown dosyasına veya güvenlik açıklarını paket yazarlarına özel olarak nasıl ileteceğinizi anlatan başka talimatlara bakın. Bunların bulunması, paket yazarının güvenliğe gerçekten önem verdiğinin iyi bir göstergesi olabilir. Son olarak, bu paketin herhangi bir testi var mı? Ve o testlerin sadece yer tutucu olmadığından emin olmak için kaynak koduna dalın. Testlere sahip olmak paketin güvenli olduğu anlamına gelmez, ancak yazarın sınırları, taşmaları ve benzeri durumları test etmeye önem veriyor olabileceğine dair bir fikir verir.
+
+Şimdi paketlerin kurulumuna değinelim. Çoğu durumda Composer ile yükleme oldukça basittir, fakat bunu root olarak çalıştırmak istemeyiz.
+
+Gördüğünüz gibi Composer aslında sizi uyarır ve “Bunu gerçekten yapmak istiyor musunuz? Çünkü muhtemelen istemezsiniz.” der. Peki Composer’ı root olarak çalıştırırsanız ne olabilir? Bir bakalım. Burada Composer install işlemini root olarak yapıyorum, yani sudo composer install. Elbette benden onay istiyor ve ben de bu korkunç şeyi yapmak istediğimi söylüyorum. Ve görebileceğiniz gibi, paketleri yükledikten sonra komutlar çalıştırıyor.
+
+İlki who am I? Bu gerçekten root olduğumu gösteriyor. İkincisi ise sadece bir şey ekrana yazdırdım, fakat root olarak her şeyi yapabilirdi. Bu gösterim Composer scripts denilen bir şey sayesinde mümkün oldu. Scripts aslında event hook'larıdır. Yani paket yüklenmeden önce gerçekleşen preinstall command gibi tanımlayabileceğiniz hook’lar vardır. Post install command ise işlemden sonra olur. Post create project command de öyle.
+
+Bu serinin önceki kısmında Laravel Create project ile yaptığımız gibi proje oluşturursak, tüm event yaşam döngüsü boyunca yaklaşık 15 tane daha vardır. Ayrıca Composer’ın kendisini değiştiren Composer plugins de vardır. Bunlar Composer’ın projeyi yükleme şeklini değiştirir.
+
+Fakat bu o kadar da korkunç değil. Gösterdiğim demo biraz kurgusaldı; nasıl çalışabileceğini göstermek için bir şeyler hazırladım. Gerçekte Composer, script'leri ve event'leri yalnızca root projede çalıştırır, bağımlılıklarda değil. Bu önemlidir çünkü Composer Require yaptığınızda bu script’ler çalışmaz.
+
+Sadece root paketinizde çalışır. Elbette kaynak kodunu klonladığınızda Composer JSON dosyasına bakarsınız, içeride istemediğiniz bir şey olup olmadığını kontrol etmek için.
+
+Fakat kendiliğinden çalışan şeylerden bahsetmişken, Laravel paket otomatik kaydını destekler. Laravel, dahili işlevselliği genişletmek için paketleri ve service provider'ları kullanır. Eskiden Composer paketini yükledikten sonra proje yapılandırmasına gidip ilgili service provider’ı eklemeniz gerekirdi. Artık tüm bunlar otomatik olarak gerçekleşiyor. Bu, yalnızca bir paketi yüklediğiniz anda projeye eklenmesi ve kodunu çalıştırmaya hazır olması anlamına gelir.
+
+Yani boot ve register metodlarına sahip o service provider’ı alırız. Laravel service provider’ları uygulama başlatıldığında komutları çalıştırır ve diğer kaynakları kaydeder. Middleware kaydedebilirler. Örneğin, bir paketin tüm kullanıcı adlarınızı ve parolalarınızı açık metin olarak toplayan bir middleware yüklediğini ve belki bunları üçüncü bir tarafa gönderdiğini düşünün. Yerel dosya sisteminde dosyaları değiştirebilir. Projenize route ve endpoint bile ekleyebilir ve bunlar hassas bilgileri açığa çıkarabilir. Ayrıca database migrations da ekleyebilirler.
+
+Genellikle migrations mevcut tabloları değiştirmek veya yeni tablolar eklemek için kullanılır. Fakat veri değiştirebilir veya hesap ekleyebiliriz ve Laravel users tablosu oldukça öngörülebilirdir, yani yüksek erişime sahip bir kullanıcı ekleyen bir migration yazmak çok da zor değildir.
+
+Peki bu paketleri güvenli bir şekilde yüklemek için hangi adımları atmalıyız? İlk olarak, bunu sürekli söylediğimi biliyorum ama kaynak kodu denetlemeniz gerekiyor. Yüklediğiniz her paketin kaynak kodundan siz sorumlusunuz, yazmamış olsanız bile. Bu nedenle Composer Require yapmadan önce kaynak koduna bakıp incelemeniz gerekiyor.
+
+Sonraki adım olarak, bir şey yükledikten sonra proje kaynağını diff ile karşılaştırabilirsiniz. Kodunuzu commit ederken başka bir şeyin değişmediğinden emin olun. Diğer dosyaları görmezden gelip “Bu benim geliştirmemden kaynaklıdır.” diye varsaymayın. Yeni bir paket yüklemeden önce tüm değişikliklerinizi commit edebilir veya stash yapabilirsiniz. Böylece kendi değişikliklerinizle kötü niyetli bir paketin yaptığı olası değişiklikleri karıştırmazsınız.
+
+Ayrıca database migrations için dry run da yapabilirsiniz. Yani ek migration var mı, dosya adları neler görebilirsiniz ve ardından bu dosyaları takip edip veritabanınıza ne yapabileceklerini inceleyebilirsiniz.
+
+Ve son olarak, sisteminizde kayıtlı tüm route’ları inceleyin. Artisan route list komutunu çalıştırarak tanımadığınız bir şey olup olmadığını kontrol edebilirsiniz.
+
+Şimdi kötü niyetli bir paketin uygulamanıza nasıl zarar verebileceğine dair bazı örneklere bakalım. git status yapıyorum, dosyaların değişmediğinden emin olmak için temiz bir dizindeyim. Sonra adından kötü niyetli olduğu belli olan bir paket yüklüyorum. Gördüğünüz gibi bir şeyler yükledi ve evil steal your data paketinin keşfedildiğini belirtti. Prompt’uma bakınca dosyalarımda da değişiklik olduğunu görüyorum.
+
+Şimdi git status yapalım. Beklemediğim şekilde bir dosya değiştirilmiş, bakalım. Gördüğünüz gibi artık herhangi biri bu Controller’a girdiğinde farklı bir kullanıcı olarak giriş yapıyor. Temelde bu extension service provider otomatik olarak kayıt edildi ve beklemediğim bir kod çalıştırarak yerel dosyalarımı değiştirdi. Beklemediğim ve kesinlikle istemediğim bir şey yaptı.
+
+Şimdi paketin proje üzerinde yapabileceği başka bir şeye bakalım. git status yapıyorum, değişiklik yok. Sonra veri silmek için tasarlanmamış başka bir paket yüklüyorum. Yüklendi ve service provider keşfedildi. Dosya değişimine bakıyoruz, beklenmedik bir şey yok. Hızlı bir şekilde migrations dry run yapmak istiyorum. Drop table users, görünüyor ki bu paket bir migration eklemiş, bir bakalım. Optimize Tables gibi dikkat dağıtıcı bir isimle oldukça zeki davranmış. Görünen o ki bu paket tüm kullanıcılarımı silme yeteneğini kaydetmiş.
+
+Kesinlikle istemediğim bir şey.
+
+Açık kaynak topluluk projeleri ve paketler, Laravel projenize işlev eklemenin harika bir yoludur. Fakat bu onların güvenlik açıkları olmayacağı veya kötü niyetli olmayacağı anlamına gelmez. Kaynak kodu denetlemeyi unutmayın, sonuçta açık kaynak. Proje kaynağınızı diff’leyin, projede bir şey değiştirip değiştirmediklerini görün. Database migrations için dry run yapın ve paketin sizin için eklemiş olabileceği tüm route’ları inceleyin.
