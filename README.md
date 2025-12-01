@@ -1,3 +1,52 @@
+# Laravel Coursera — Secure Authentication Course
+
+Authentication is the first half of securing user access to your Laravel application. In this course, we’ll cover how to authenticate users in Laravel and the reasons why. We’ll discuss and examine the built-in Laravel authentication kits and explain which kit is best for which use case. Even if you have unique authentication requirements, Laravel’s authentication system can be used and we’ll show how with a custom authentication provider.
+
+## Learning Objectives
+
+- Summarize upgrading to an authenticated user
+- Explain multiple authentications
+- Describe how to verify authenticated users
+- Detail how to create a secure custom authentication service
+- Explain the functionality Laravel has for authentication
+
+## Course Modules (from `_docs`)
+
+**Module 1: Secure Coding in Laravel**
+- Secure Coding in Laravel with Aaron Soray
+- Prerequisites and how to use this learning path
+- Installation of the framework
+- Secure installation of third-party packages
+- Staying up to date with Laravel security
+- Laravel glossary
+
+**Module 2: Securing configuration & environment**
+- Securing secrets and using configuration
+- Environment and debug impacts
+- Forcing SSL
+- Log filtering
+- Exception handler configuration
+
+**Module 3: Validation**
+- Validation overview
+- Validating data types
+- Validating data from available selection
+- Validating boundaries
+- Custom validation rules
+- Form request validation
+
+## How to use this repo
+
+- The `_docs` folder contains the lesson markdown files used to build the course content. Use these notes as reference while you implement authentication features in the codebase.
+- Implement authentication using Laravel's built-in kits (Breeze, Jetstream, Fortify) or a custom provider where needed.
+
+## Next steps
+
+- Review the `_docs` lessons relevant to the authentication approach you plan to use.
+- Implement and test authentication flows in `app/Http/Controllers` and middleware in `app/Http/Middleware` (as needed).
+
+---
+Generated from course notes in `_docs`.
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
 <p align="center">
